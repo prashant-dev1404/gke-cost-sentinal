@@ -1,0 +1,32 @@
+alertmanager:
+  enabled: false
+
+grafana:
+  persistence:
+    enabled: false
+
+# GKE Autopilot blocks all writes to kube-system. These five components
+# all try to create headless Services there for scraping — disable them.
+# kubelet metrics (cAdvisor) are unavailable via this path on Autopilot;
+# node-exporter still provides node_cpu_seconds_total which is what the
+# idle-node scanner uses.
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeEtcd:
+  enabled: false
+kubeProxy:
+  enabled: false
+kubelet:
+  enabled: false
+coreDns:
+  enabled: false
+
+prometheus:
+  prometheusSpec:
+    retention: 7d
+    resources:
+      requests:
+        cpu: "200m"
+        memory: "512Mi"

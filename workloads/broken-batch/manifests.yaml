@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: broken
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: broken-batch
+  namespace: broken
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: broken-batch
+  template:
+    metadata:
+      labels:
+        app: broken-batch
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+      containers:
+        - name: broken-batch
+          image: busybox:1.36
+          command: ["sh", "-c", "while true; do sleep 60; done"]
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          securityContext:
+            allowPrivilegeEscalation: false
+---
+# Intentional misconfiguration: minAvailable equals replica count.
+# No pod can ever be voluntarily evicted, so the node hosting these
+# pods can never be drained. Autopilot keeps billing for 1.5 vCPU +
+# 1.5 GB of memory that is doing nothing.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: broken-batch-pdb
+  namespace: broken
+spec:
+  minAvailable: 3
+  selector:
+    matchLabels:
+      app: broken-batch

@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: healthy
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: healthy-app
+  namespace: healthy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: healthy-app
+  template:
+    metadata:
+      labels:
+        app: healthy-app
+    spec:
+      containers:
+        - name: healthy-app
+          image: asia-south1-docker.pkg.dev/cost-sentinel-13402/sentinel/healthy-app:v1
+          ports:
+            - containerPort: 8000
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: healthy-app
+  namespace: healthy
+spec:
+  selector:
+    app: healthy-app
+  ports:
+    - port: 80
+      targetPort: 8000
+  type: ClusterIP
