@@ -3,6 +3,7 @@ from src.config import settings
 from src.clients.prometheus import PrometheusClient
 from src.clients.bigquery import BigQueryClient
 from src.scanners import idle_nodes, billing_anomaly
+from src.triage import agent
 
 app = FastAPI(title="GKE Cost Sentinel")
 
@@ -30,5 +31,5 @@ def scan_billing_anomaly():
 
 
 @app.post("/triage")
-def triage(alert: dict):
-    return {"todo": True}
+def triage_endpoint(alert: dict):
+    return agent.triage(alert)
