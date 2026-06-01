@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: detector
+  namespace: sentinel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: detector
+  template:
+    metadata:
+      labels:
+        app: detector
+    spec:
+      serviceAccountName: detector
+      containers:
+        - name: detector
+          image: asia-south1-docker.pkg.dev/cost-sentinel-13402/sentinel/detector:v1
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: detector-config
+          env:
+            - name: GROQ_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: detector-secrets
+                  key: GROQ_API_KEY
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
